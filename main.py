@@ -3,7 +3,7 @@ from handlers.start_handler import start
 from handlers.hoje_handler import hoje_handler
 from handlers.estatisticas_handler import estatisticas_handler
 from handlers.sugestao_handler import sugestao_handler
-from scheduler import start_scheduler, scheduled_suggestion
+from service.scheduler import start_scheduler, scheduled_suggestion
 import os
 
 TOKEN = os.getenv("BOT_TOKEN")
