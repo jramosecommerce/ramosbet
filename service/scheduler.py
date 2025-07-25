@@ -1,4 +1,5 @@
 from telegram.ext import Application
+from service.scheduler import start_scheduler, scheduled_suggestion
 from handlers.sugestao_handler import sugestao_handler
 from datetime import time
 
