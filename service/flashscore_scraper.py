@@ -37,7 +37,7 @@ async def gerar_sugestao_aposta():
         time_fora = partida.select_one(".event__participant--away").text.strip()
         hora = partida.select_one(".event__time").text.strip()
 
-        sugestao = f"⏰ {hora} - {time_casa} x {time_fora}\nSugestão: +1.5 gols ou Ambas Marcam"
+        sugestao = f"\u23f0 {hora} - {time_casa} x {time_fora}\nSugest\u00e3o: +1.5 gols ou Ambas Marcam"
         sugestoes.append(sugestao)
 
     return sugestoes
