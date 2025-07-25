@@ -1,0 +1,6 @@
+python-telegram-bot==20.3
+beautifulsoup4
+requests
+aiohttp
+python-dotenv
+schedule
