@@ -1,16 +1,33 @@
-def get_stats_fake(team):
-    return {
-        "posse": "55%",
-        "finalizacoes": 14,
-        "chutes_gol": 6,
-        "escanteios": 5,
-        "faltas": 10,
-        "cartoes": 3
+import aiohttp
+from bs4 import BeautifulSoup
+
+async def get_past_match_stats(team_name):
+    url = f"https://www.flashscore.com.br/equipe/{team_name}/resultados/"
+    headers = {
+        "User-Agent": "Mozilla/5.0"
     }
 
-def gerar_estatisticas_reais(jogo):
-    return f"\n\n*{jogo['time_casa']} x {jogo['time_fora']}*\n" \
-           f"Posse: {get_stats_fake(jogo['time_casa'])['posse']}\n" \
-           f"Finalizações: {get_stats_fake(jogo['time_casa'])['finalizacoes']}\n" \
-           f"Escanteios: {get_stats_fake(jogo['time_casa'])['escanteios']}\n" \
-           f"Cartões: {get_stats_fake(jogo['time_casa'])['cartoes']}\n"
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url, headers=headers) as response:
+            html = await response.text()
+
+    soup = BeautifulSoup(html, "html.parser")
+
+    resultados = []
+    partidas = soup.select(".event__match--static")[:5]  # últimos 5 jogos
+
+    for partida in partidas:
+        data = partida.select_one(".event__time").text.strip()
+        casa = partida.select_one(".event__participant--home").text.strip()
+        fora = partida.select_one(".event__participant--away").text.strip()
+        placar_casa = partida.select_one(".event__score--home").text.strip()
+        placar_fora = partida.select_one(".event__score--away").text.strip()
+
+        resultados.append({
+            "data": data,
+            "time_casa": casa,
+            "time_fora": fora,
+            "placar": f"{placar_casa} x {placar_fora}"
+        })
+
+    return resultados
