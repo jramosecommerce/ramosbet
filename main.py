@@ -6,7 +6,7 @@ from handlers.sugestao_handler import sugestao
 
 import os
 
-TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+TOKEN = os.getenv("BOT_TOKEN")
 
 def main():
     updater = Updater(TOKEN)
