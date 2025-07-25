@@ -1,15 +1,21 @@
 import requests
 from bs4 import BeautifulSoup
 
-def get_today_matches():
+def coletar_jogos_do_dia():
     url = "https://www.flashscore.com.br/"
-    response = requests.get(url, headers={"User-Agent": "Mozilla/5.0"})
-    soup = BeautifulSoup(response.content, "html.parser")
-    partidas = soup.select(".event__match")
+    headers = {"User-Agent": "Mozilla/5.0"}
+    response = requests.get(url, headers=headers)
+    soup = BeautifulSoup(response.text, "html.parser")
     jogos = []
-    for partida in partidas[:10]:
-        time_home = partida.select_one(".event__participant--home")
-        time_away = partida.select_one(".event__participant--away")
-        if time_home and time_away:
-            jogos.append(f"🏟️ {time_home.text} x {time_away.text}")
+
+    for jogo in soup.select(".event__match"):
+        time_casa = jogo.select_one(".event__participant--home")
+        time_fora = jogo.select_one(".event__participant--away")
+
+        if time_casa and time_fora:
+            jogos.append({
+                "time_casa": time_casa.text.strip(),
+                "time_fora": time_fora.text.strip(),
+            })
+
     return jogos
