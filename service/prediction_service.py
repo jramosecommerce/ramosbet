@@ -1,7 +1,2 @@
-def gerar_sugestoes():
-    return (
-        "🎯 Sugestões de Apostas:\n"
-        "- Mais de 2.5 gols em Flamengo x Palmeiras\n"
-        "- Ambas equipes marcam em Grêmio x Inter\n"
-        "- Vitória do São Paulo (empate anula)"
-    )
+def gerar_sugestao(jogo):
+    return f"Sugestão: Mais de 1.5 gols em {jogo['time_casa']} x {jogo['time_fora']}\n"
