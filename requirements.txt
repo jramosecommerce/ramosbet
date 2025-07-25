@@ -2,3 +2,5 @@ python-telegram-bot==20.7
 APScheduler==3.10.1
 requests
 python-dotenv
+beautifulsoup4
+lxml
