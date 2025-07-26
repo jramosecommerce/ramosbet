@@ -1,8 +1,14 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import CallbackContext, CommandHandler, CallbackQueryHandler
+from telegram.ext import (
+    CommandHandler,
+    CallbackQueryHandler,
+    ContextTypes,
+)
+
 from service.stats_service import listar_partidas_do_dia, obter_estatisticas_partida
 
-async def estatisticas_handler(update: Update, context: CallbackContext):
+# Comando /estatisticas
+async def estatisticas_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     partidas = listar_partidas_do_dia()
     
     if not partidas:
@@ -10,15 +16,20 @@ async def estatisticas_handler(update: Update, context: CallbackContext):
         return
 
     keyboard = []
-    for i, partida in enumerate(partidas):
+    for partida in partidas:
         texto_botao = f"{partida['hora']} - {partida['times']}"
         callback_data = f"estatisticas|{partida['url']}"
         keyboard.append([InlineKeyboardButton(texto_botao, callback_data=callback_data)])
 
     reply_markup = InlineKeyboardMarkup(keyboard)
-    await update.message.reply_text("📊 *Escolha uma partida para ver as estatísticas reais:*", reply_markup=reply_markup, parse_mode="Markdown")
+    await update.message.reply_text(
+        "📊 *Escolha uma partida para ver as estatísticas reais:*",
+        reply_markup=reply_markup,
+        parse_mode="Markdown"
+    )
 
-async def estatisticas_callback(update: Update, context: CallbackContext):
+# Callback ao clicar no botão
+async def estatisticas_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
 
@@ -45,6 +56,7 @@ async def estatisticas_callback(update: Update, context: CallbackContext):
 
         await query.edit_message_text(texto, parse_mode="Markdown")
 
+# Registro no bot
 def registrar_handlers_estatisticas(app):
     app.add_handler(CommandHandler("estatisticas", estatisticas_handler))
     app.add_handler(CallbackQueryHandler(estatisticas_callback, pattern=r"^estatisticas\|"))
