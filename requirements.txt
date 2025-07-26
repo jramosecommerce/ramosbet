@@ -5,4 +5,4 @@ aiohttp
 python-dotenv
 schedule
 lxml
-
+nest_asyncio
