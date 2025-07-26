@@ -1,27 +1,31 @@
-import os
-from telegram.ext import ApplicationBuilder, CommandHandler
+import asyncio
+from telegram.ext import ApplicationBuilder
 from handlers.start_handler import start
-from handlers.hoje_handler import hoje_handler
+from handlers.hoje_handler import registrar_handlers_hoje
 from handlers.estatisticas_handler import registrar_handlers_estatisticas
-from handlers.sugestao_handler import sugestao_handler
-from service.scheduler import start_scheduler
+from handlers.sugestao_handler import registrar_handlers_sugestao
+from telegram.ext import CommandHandler
 
-TOKEN = os.getenv("BOT_TOKEN")
+# Substitua pelo seu token do BotFather
+TOKEN = "8242348358:AAES95eDSqPFGoyZ7vmgZFolEBSClE40O_Y"
 
-app = ApplicationBuilder().token(TOKEN).build()
+async def main():
+    app = ApplicationBuilder().token(TOKEN).build()
 
-# Registro dos comandos simples
-app.add_handler(CommandHandler("start", start))
-app.add_handler(CommandHandler("hoje", hoje_handler))
-app.add_handler(CommandHandler("sugestao", sugestao_handler))
+    # /start
+    app.add_handler(CommandHandler("start", start))
 
-# Registro do comando com callback (estatísticas por botão)
-registrar_handlers_estatisticas(app)
+    # /hoje
+    registrar_handlers_hoje(app)
 
-# Agendamento da sugestão automática às 10h
-chat_id_padrao = os.getenv("CHAT_ID_PADRAO")  # define o ID do grupo ou pessoa para envio automático
-if chat_id_padrao:
-    start_scheduler(app, int(chat_id_padrao))
+    # /estatisticas
+    registrar_handlers_estatisticas(app)
 
-print("✅ Bot iniciado com sucesso...")
-app.run_polling()
+    # /sugestao
+    registrar_handlers_sugestao(app)
+
+    print("✅ Bot está rodando...")
+    await app.run_polling()
+
+if __name__ == "__main__":
+    asyncio.run(main())
