@@ -1,20 +1,27 @@
-# service/flashscore_scraper.py
-
 import aiohttp
 from bs4 import BeautifulSoup
 
 BASE_URL = "https://www.flashscore.com.br/"
 
 async def obter_jogos_do_dia():
+    headers = {
+        "User-Agent": "Mozilla/5.0"
+    }
+
     async with aiohttp.ClientSession() as session:
-        async with session.get(BASE_URL) as resp:
+        async with session.get(BASE_URL, headers=headers) as resp:
             html = await resp.text()
 
     soup = BeautifulSoup(html, "lxml")
     jogos = []
-    partidas = soup.select(".event__match")
 
-    for partida in partidas[:10]:  # limita aos 10 primeiros
+    # Atualizado para pegar corretamente as partidas reais
+    partidas = soup.select("div[id^='g_'][data-event-home][data-event-away]")
+
+    if not partidas:
+        print("⚠️ Nenhuma tag de partida foi encontrada na página inicial do Flashscore.")
+
+    for partida in partidas[:10]:  # limitar a 10 jogos para performance
         time_casa = partida.get("data-event-home")
         time_fora = partida.get("data-event-away")
         event_id = partida.get("id")
@@ -61,7 +68,7 @@ async def gerar_sugestao_aposta():
     jogos = await obter_jogos_do_dia()
 
     if not jogos:
-        return "⚠️ Nenhuma partida foi encontrada para hoje no Flashscore."
+        return ["⚠️ Nenhuma partida foi encontrada para hoje no Flashscore."]
 
     jogo = jogos[0]  # Pega o primeiro jogo do dia
     estatisticas = await obter_estatisticas_reais(jogo["url_estatisticas"])
@@ -74,4 +81,4 @@ async def gerar_sugestao_aposta():
         "\n".join(estatisticas)
     )
 
-    return sugestao
+    return [sugestao]
