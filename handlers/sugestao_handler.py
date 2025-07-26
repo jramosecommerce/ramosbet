@@ -12,7 +12,7 @@ async def sugestao_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
 
         for texto in sugestoes:
-            await update.message.reply_text(texto)
+            await update.message.reply_text(texto, parse_mode="Markdown", disable_web_page_preview=False)
 
     except Exception as e:
         await update.message.reply_text(f"❌ Erro ao gerar sugestão: {e}")
