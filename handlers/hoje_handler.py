@@ -1,6 +1,5 @@
 from telegram import Update
 from telegram.ext import ContextTypes
-#from service.flashscore_scraper import obter_jogos_do_dia
 from service.flashscore_scraper import obter_jogos_do_dia
 
 async def hoje_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
