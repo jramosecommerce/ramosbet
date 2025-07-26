@@ -1,84 +1,45 @@
 import aiohttp
 from bs4 import BeautifulSoup
 
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+}
+
 BASE_URL = "https://m.flashscore.com.br/"
 
 async def obter_jogos_do_dia():
-    headers = {
-        "User-Agent": "Mozilla/5.0"
-    }
-
-    async with aiohttp.ClientSession() as session:
-        async with session.get(BASE_URL, headers=headers) as resp:
+    async with aiohttp.ClientSession(headers=HEADERS) as session:
+        async with session.get(BASE_URL) as resp:
             html = await resp.text()
 
     soup = BeautifulSoup(html, "lxml")
     jogos = []
 
-    # Atualizado para pegar corretamente as partidas reais
-    partidas = soup.select("div[id^='g_'][data-event-home][data-event-away]")
+    for evento in soup.select(".event__match"):
+        casa = evento.select_one(".event__participant--home")
+        fora = evento.select_one(".event__participant--away")
 
-    if not partidas:
-        print("⚠️ Nenhuma tag de partida foi encontrada na página inicial do Flashscore.")
-
-    for partida in partidas[:10]:  # limitar a 10 jogos para performance
-        time_casa = partida.get("data-event-home")
-        time_fora = partida.get("data-event-away")
-        event_id = partida.get("id")
-
-        if time_casa and time_fora and event_id:
-            url = f"https://www.flashscore.com.br/jogo/{event_id[4:]}/#/resumo-de-jogo/estatisticas"
+        if casa and fora:
             jogos.append({
-                "time_casa": time_casa,
-                "time_fora": time_fora,
-                "url_estatisticas": url
+                "time_casa": casa.text.strip(),
+                "time_fora": fora.text.strip(),
+                "url_estatisticas": BASE_URL  # ainda não temos link real de estatísticas por scraping
             })
 
     return jogos
 
-
-async def obter_estatisticas_reais(url):
-    url_sem_hash = url.split("#")[0].replace("/#/resumo-de-jogo/estatisticas", "/estatisticas")
-    
-    headers = {
-        "User-Agent": "Mozilla/5.0"
-    }
-
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url_sem_hash, headers=headers) as response:
-            html = await response.text()
-
-    soup = BeautifulSoup(html, "lxml")
-    estatisticas = []
-
-    stat_rows = soup.select(".statRow")
-
-    for row in stat_rows:
-        tipo = row.select_one(".statText--title")
-        casa = row.select_one(".statText--home")
-        fora = row.select_one(".statText--away")
-
-        if tipo and casa and fora:
-            estatisticas.append(f"- {tipo.text.strip()}: {casa.text.strip()} x {fora.text.strip()}")
-
-    return estatisticas if estatisticas else ["⚠️ Estatísticas não disponíveis."]
-
-
 async def gerar_sugestao_aposta():
     jogos = await obter_jogos_do_dia()
-
     if not jogos:
-        return ["⚠️ Nenhuma partida foi encontrada para hoje no Flashscore."]
+        return ["⚠️ Nenhuma partida foi encontrada para hoje no Flashscore (versão leve)."]
 
-    jogo = jogos[0]  # Pega o primeiro jogo do dia
-    estatisticas = await obter_estatisticas_reais(jogo["url_estatisticas"])
+    sugestoes = []
+    for jogo in jogos[:5]:
+        sugestao = (
+            f"🎯 *Sugestão de Aposta:*\n\n"
+            f"🏟️ *Partida:* {jogo['time_casa']} x {jogo['time_fora']}\n"
+            f"🔗 Acompanhe em: {BASE_URL}"
+        )
+        sugestoes.append(sugestao)
 
-    sugestao = (
-        f"🎯 *Sugestão de Aposta para Hoje:*\n\n"
-        f"🏟️ *Partida:* {jogo['time_casa']} x {jogo['time_fora']}\n"
-        f"🔗 [Ver no Flashscore]({jogo['url_estatisticas']})\n\n"
-        f"📊 *Estatísticas reais:*\n" +
-        "\n".join(estatisticas)
-    )
-
-    return [sugestao]
+    return sugestoes
