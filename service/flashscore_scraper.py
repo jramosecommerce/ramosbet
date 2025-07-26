@@ -1,7 +1,7 @@
 import aiohttp
 from bs4 import BeautifulSoup
 
-BASE_URL = "https://www.flashscore.com.br/"
+BASE_URL = "https://m.flashscore.com.br/"
 
 async def obter_jogos_do_dia():
     headers = {
