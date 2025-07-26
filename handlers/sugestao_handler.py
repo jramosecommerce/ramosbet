@@ -6,10 +6,10 @@ async def sugestao_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         await update.message.reply_text("🔍 Gerando sugestões com base nos jogos reais de hoje...")
 
-        sugestoes = await
-        gerar_sugestao_aposta()
+        sugestoes = await gerar_sugestao_aposta()
         if not sugestoes:
-            await update.message.reply_text("⚠️ Nenhuma sugestão encontrada para hoje.")
+            await 
+            update.message.reply_text("⚠️ Nenhuma sugestão encontrada para hoje.")
             return
 
         for texto in sugestoes:
