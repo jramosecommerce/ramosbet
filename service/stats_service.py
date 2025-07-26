@@ -1,7 +1,7 @@
 service/stats_service.py
 
-import requests 
-from bs4 import BeautifulSoup 
+import requests
+from bs4 import BeautifulSoup
 from datetime import datetime
 
 def obter_estatisticas_partida(url_partida): """ Retorna estatísticas reais da partida a partir da URL da partida no Flashscore """ headers = { "User-Agent": "Mozilla/5.0" } response = requests.get(url_partida, headers=headers) soup = BeautifulSoup(response.text, "html.parser")
