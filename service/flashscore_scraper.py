@@ -30,13 +30,13 @@ async def obter_jogos_do_dia():
 
 
 async def obter_estatisticas_aleatorias():
-    # Simula scraping de estatísticas por enquanto
-    return (
-        "📊 *Estatísticas do Jogo Selecionado:*"
-        "- Posse de bola: 52% x 48%"
-        "- Finalizações: 13 x 10"
-        "- Escanteios: 5 x 3"
-        "- Cartões: 2 x 1"
-        "- Ambos Marcam: ✅"
+    stats = [
+        "📊 *Estatísticas do Jogo Selecionado:*",
+        "- Posse de bola: 52% x 48%",
+        "- Finalizações: 13 x 10",
+        "- Escanteios: 5 x 3",
+        "- Cartões: 2 x 1",
+        "- Ambos Marcam: ✅",
         "- Mais de 2.5 Gols: ❌"
-    )
+    ]
+    return "\n".join(stats)
