@@ -14,29 +14,64 @@ async def obter_jogos_do_dia():
     jogos = []
     partidas = soup.select(".event__match")
 
-    for partida in partidas[:10]:  # limita aos 10 primeiros para performance
-        time_casa = partida.select_one(".event__participant--home")
-        time_fora = partida.select_one(".event__participant--away")
-        horario = partida.select_one(".event__time")
+    for partida in partidas[:10]:  # limita aos 10 primeiros
+        time_casa = partida.get("data-event-home")
+        time_fora = partida.get("data-event-away")
+        event_id = partida.get("id")
 
-        if time_casa and time_fora and horario:
+        if time_casa and time_fora and event_id:
+            url = f"https://www.flashscore.com.br/jogo/{event_id[4:]}/#/resumo-de-jogo/estatisticas"
             jogos.append({
-                "time_casa": time_casa.text.strip(),
-                "time_fora": time_fora.text.strip(),
-                "horario": horario.text.strip()
+                "time_casa": time_casa,
+                "time_fora": time_fora,
+                "url_estatisticas": url
             })
 
     return jogos
 
 
-async def obter_estatisticas_aleatorias():
-    stats = [
-        "📊 *Estatísticas do Jogo Selecionado:*",
-        "- Posse de bola: 52% x 48%",
-        "- Finalizações: 13 x 10",
-        "- Escanteios: 5 x 3",
-        "- Cartões: 2 x 1",
-        "- Ambos Marcam: ✅",
-        "- Mais de 2.5 Gols: ❌"
-    ]
-    return "\n".join(stats)
+async def obter_estatisticas_reais(url):
+    url_sem_hash = url.split("#")[0].replace("/#/resumo-de-jogo/estatisticas", "/estatisticas")
+    
+    headers = {
+        "User-Agent": "Mozilla/5.0"
+    }
+
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url_sem_hash, headers=headers) as response:
+            html = await response.text()
+
+    soup = BeautifulSoup(html, "lxml")
+    estatisticas = []
+
+    stat_rows = soup.select(".statRow")
+
+    for row in stat_rows:
+        tipo = row.select_one(".statText--title")
+        casa = row.select_one(".statText--home")
+        fora = row.select_one(".statText--away")
+
+        if tipo and casa and fora:
+            estatisticas.append(f"- {tipo.text.strip()}: {casa.text.strip()} x {fora.text.strip()}")
+
+    return estatisticas if estatisticas else ["⚠️ Estatísticas não disponíveis."]
+
+
+async def gerar_sugestao_aposta():
+    jogos = await obter_jogos_do_dia()
+
+    if not jogos:
+        return "⚠️ Nenhuma partida foi encontrada para hoje no Flashscore."
+
+    jogo = jogos[0]  # Pega o primeiro jogo do dia
+    estatisticas = await obter_estatisticas_reais(jogo["url_estatisticas"])
+
+    sugestao = (
+        f"🎯 *Sugestão de Aposta para Hoje:*\n\n"
+        f"🏟️ *Partida:* {jogo['time_casa']} x {jogo['time_fora']}\n"
+        f"🔗 [Ver no Flashscore]({jogo['url_estatisticas']})\n\n"
+        f"📊 *Estatísticas reais:*\n" +
+        "\n".join(estatisticas)
+    )
+
+    return sugestao
