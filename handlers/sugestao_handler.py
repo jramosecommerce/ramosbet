@@ -18,4 +18,4 @@ async def sugestao_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"❌ Erro ao gerar sugestão: {e}")
 
 def registrar_handlers_sugestao(app):
-    app.add_handler(CommandHandler("sugestao", sugestao))
+    app.add_handler(CommandHandler("sugestao", sugestao_handler))
