@@ -6,14 +6,13 @@ async def sugestao_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         await update.message.reply_text("🔍 Gerando sugestões com base nos jogos reais de hoje...")
 
-        sugestoes = await gerar_sugestao_aposta()
-        if not sugestoes:
-            await 
-            update.message.reply_text("⚠️ Nenhuma sugestão encontrada para hoje.")
+        sugestao = await gerar_sugestao_aposta()
+
+        if not sugestao:
+            await update.message.reply_text("⚠️ Nenhuma sugestão encontrada para hoje.")
             return
 
-        for texto in sugestoes:
-            await update.message.reply_text(texto)
+        await update.message.reply_text(sugestao, parse_mode="Markdown")
 
     except Exception as e:
         await update.message.reply_text(f"❌ Erro ao gerar sugestão: {e}")
