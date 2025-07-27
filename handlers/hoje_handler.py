@@ -1,12 +1,15 @@
 from telegram import Update
 from telegram.ext import CommandHandler, ContextTypes
 from service.flashscore_scraper import obter_jogos_do_dia
+from asyncio import to_thread
 
 async def hoje_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         await update.message.reply_text("📅 Buscando jogos reais de hoje...")
 
-        jogos = await obter_jogos_do_dia()
+        # Correção: executa função síncrona via to_thread
+        jogos = await to_thread(obter_jogos_do_dia)
+
         if not jogos:
             await update.message.reply_text("⚠️ Nenhum jogo encontrado para hoje.")
             return
