@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
 
-FLASHCORE_URL = "https://www.flashscore.com.br/x/"  # versão leve, ideal para scraping
+FLASHCORE_URL = "https://www.flashscore.com.br/"  # versão leve, ideal para scraping
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
