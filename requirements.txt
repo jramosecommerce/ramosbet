@@ -8,3 +8,4 @@ lxml
 nest_asyncio
 selenium
 webdriver-manager
+apscheduler
