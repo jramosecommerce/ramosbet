@@ -85,3 +85,34 @@ async def obter_estatisticas_reais(nome_jogo):
 
         resposta = f"📊 Estatísticas reais de {nome_jogo}:\n\n" + "\n".join(estatisticas)
         return resposta
+
+async def gerar_sugestao_aposta():
+    jogos = await obter_jogos_do_dia_sync()
+
+    if not jogos:
+        return "⚠️ Nenhum jogo encontrado para hoje no Flashscore."
+
+    sugestoes = []
+
+    for jogo in jogos[:10]:  # Limita para os 10 primeiros jogos do dia
+        partes = jogo.split(" - ")
+        if len(partes) < 2:
+            continue
+
+        times = partes[1]
+        if " x " not in times:
+            continue
+
+        time_casa, time_fora = times.split(" x ")
+
+        # Sugestão simples com base nos nomes dos times
+        sugestao = f"📌 *{jogo}*\n" \
+                   f"🔹 Sugestão: Dupla chance - {time_casa} ou empate\n" \
+                   f"🔹 Possível mercado: Mais de 1.5 gols\n"
+
+        sugestoes.append(sugestao)
+
+    if not sugestoes:
+        return "⚠️ Não foi possível gerar sugestões hoje."
+
+    return "\n\n".join(sugestoes)
