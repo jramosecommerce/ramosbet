@@ -33,3 +33,55 @@ def obter_jogos_do_dia():
                 "url_estatisticas": url
             })
     return jogos
+
+async def obter_estatisticas_reais(nome_jogo):
+    # Exemplo: nome_jogo = "15:00 - São Paulo x Palmeiras"
+    nome_jogo = nome_jogo.lower()
+
+    async with httpx.AsyncClient() as client:
+        response = await client.get(FLASHCORE_URL, headers=headers)
+        soup = BeautifulSoup(response.text, "html.parser")
+
+        partidas = soup.select("div.event__match--scheduled, div.event__match--live")
+        link_encontrado = None
+
+        for partida in partidas:
+            time1 = partida.select_one(".event__participant--home")
+            time2 = partida.select_one(".event__participant--away")
+            hora = partida.select_one(".event__time")
+
+            if not (time1 and time2 and hora):
+                continue
+
+            texto_partida = f"{hora.text.strip()} - {time1.text.strip()} x {time2.text.strip()}".lower()
+
+            if nome_jogo in texto_partida:
+                match_id = partida.get("id", "").replace("g_1_", "")
+                link_encontrado = f"{FLASHCORE_BASE}/partida/{match_id}/#/resumo-do-jogo"
+                break
+
+        if not link_encontrado:
+            return f"❌ Não foi possível localizar o jogo '{nome_jogo}' no Flashscore."
+
+        # Vai na página da partida
+        response = await client.get(link_encontrado, headers=headers)
+        soup = BeautifulSoup(response.text, "html.parser")
+
+        # Exemplo de scraping simples de estatísticas
+        estatisticas = []
+
+        stats_blocks = soup.select(".stat__category")
+        for bloco in stats_blocks:
+            titulo = bloco.select_one(".stat__categoryName")
+            valores = bloco.select(".stat__value")
+
+            if titulo and len(valores) == 2:
+                estatisticas.append(
+                    f"{valores[0].text.strip()} - {titulo.text.strip()} - {valores[1].text.strip()}"
+                )
+
+        if not estatisticas:
+            return f"⚠️ Estatísticas ainda não disponíveis para '{nome_jogo}'"
+
+        resposta = f"📊 Estatísticas reais de {nome_jogo}:\n\n" + "\n".join(estatisticas)
+        return resposta
