@@ -1,15 +1,13 @@
-from telegram.ext import Application
-from datetime import time
-from service.flashscore_scraper import gerar_sugestao_aposta
+from apscheduler.schedulers.background import BackgroundScheduler
+from service.prediction_service import gerar_sugestoes_dia
 
-async def scheduled_suggestion(context):
-    chat_id = context.job.context
-    sugestao = await gerar_sugestao_aposta()  # Função assíncrona com dados reais
-    await context.bot.send_message(chat_id=chat_id, text=sugestao, parse_mode='Markdown')
+def iniciar_scheduler(bot):
+    scheduler = BackgroundScheduler()
 
-def start_scheduler(application: Application, chat_id: int):
-    application.job_queue.run_daily(
-        scheduled_suggestion,
-        time(hour=10, minute=0),
-        context=chat_id
-    )
+    def enviar_sugestoes():
+        sugestoes = gerar_sugestoes_dia()
+        for texto in sugestoes:
+            bot.send_message(chat_id=SEU_CHAT_ID, text=texto, parse_mode="Markdown")
+
+    scheduler.add_job(enviar_sugestoes, trigger='cron', hour=10)  # Altere o horário conforme preferir
+    scheduler.start()
