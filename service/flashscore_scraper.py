@@ -55,3 +55,17 @@ def gerar_sugestao_aposta(jogo_nome):
 📈 *Ambos marcam*: Sim  
 """
     return sugestao
+
+def gerar_sugestoes_dia():
+    jogos = obter_jogos_do_dia()  # Deve retornar lista com nomes dos jogos
+    sugestoes = []
+
+    for jogo in jogos:
+        try:
+            texto = gerar_sugestao_aposta(jogo_nome=jogo)
+            if texto:
+                sugestoes.append(texto)
+        except Exception as e:
+            print(f"[ERRO] Não foi possível gerar sugestão para {jogo}: {e}")
+
+    return sugestoes
