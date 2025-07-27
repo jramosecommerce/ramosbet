@@ -10,19 +10,18 @@ async def estatisticas_handler(update: Update, context: ContextTypes.DEFAULT_TYP
     try:
         await update.message.reply_text("📊 Buscando jogos disponíveis para mostrar estatísticas reais...")
 
-        # Correção: função síncrona chamada em contexto assíncrono
+        # Executa função síncrona em thread
         jogos = await to_thread(obter_jogos_do_dia)
 
         if not jogos:
             await update.message.reply_text("⚠️ Nenhum jogo encontrado.")
             return
 
-        # Salva jogos no cache
+        # Salva os jogos no cache do usuário
         jogos_cache[update.effective_chat.id] = jogos
 
         botoes = [
-            [InlineKeyboardButton(f"{j['time_casa']} x {j['time_fora']}", callback_data=str(i))]
-            for i, j in enumerate(jogos)
+            [InlineKeyboardButton(jogo, callback_data=str(i))] for i, jogo in enumerate(jogos)
         ]
 
         await update.message.reply_text(
@@ -46,12 +45,12 @@ async def estatisticas_callback(update: Update, context: ContextTypes.DEFAULT_TY
         indice = int(query.data)
         jogo = jogos[indice]
 
-        # Também corrigido para executar função síncrona
-        estatisticas = await to_thread(obter_estatisticas_reais, jogo["url_estatisticas"])
+        # Chama função de scraping de estatísticas com a string do jogo
+        estatisticas = await to_thread(obter_estatisticas_reais, jogo)
 
         texto = (
             f"📊 *Estatísticas Reais*\n"
-            f"🏟️ {jogo['time_casa']} x {jogo['time_fora']}\n\n" +
+            f"🏟️ {jogo}\n\n" +
             "\n".join(estatisticas)
         )
 
