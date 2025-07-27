@@ -1,6 +1,7 @@
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import CommandHandler, CallbackQueryHandler, ContextTypes
 from service.flashscore_scraper import obter_jogos_do_dia, obter_estatisticas_reais
+from asyncio import to_thread
 
 # Armazena os jogos do dia em cache simples por usuário
 jogos_cache = {}
@@ -9,7 +10,9 @@ async def estatisticas_handler(update: Update, context: ContextTypes.DEFAULT_TYP
     try:
         await update.message.reply_text("📊 Buscando jogos disponíveis para mostrar estatísticas reais...")
 
-        jogos = await obter_jogos_do_dia()
+        # Correção: função síncrona chamada em contexto assíncrono
+        jogos = await to_thread(obter_jogos_do_dia)
+
         if not jogos:
             await update.message.reply_text("⚠️ Nenhum jogo encontrado.")
             return
@@ -43,7 +46,8 @@ async def estatisticas_callback(update: Update, context: ContextTypes.DEFAULT_TY
         indice = int(query.data)
         jogo = jogos[indice]
 
-        estatisticas = await obter_estatisticas_reais(jogo["url_estatisticas"])
+        # Também corrigido para executar função síncrona
+        estatisticas = await to_thread(obter_estatisticas_reais, jogo["url_estatisticas"])
 
         texto = (
             f"📊 *Estatísticas Reais*\n"
